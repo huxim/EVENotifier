@@ -34,6 +34,7 @@ Partial Class Main
         Me.选项OToolStripMenuItem1 = New System.Windows.Forms.ToolStripMenuItem
         Me.帮助HToolStripMenuItem1 = New System.Windows.Forms.ToolStripMenuItem
         Me.使用帮助HToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem
+        Me.检查更新UToolStripMenuItem = New System.Windows.Forms.ToolStripMenuItem
         Me.关于AToolStripMenuItem1 = New System.Windows.Forms.ToolStripMenuItem
         Me.SplitContainer1 = New System.Windows.Forms.SplitContainer
         Me.lblTimeNow = New System.Windows.Forms.Label
@@ -49,6 +50,7 @@ Partial Class Main
         Me.Timer1 = New System.Windows.Forms.Timer(Me.components)
         Me.NotifyIcon1 = New System.Windows.Forms.NotifyIcon(Me.components)
         Me.ContextMenuStrip1 = New System.Windows.Forms.ContextMenuStrip(Me.components)
+        Me.BackgroundWorker1 = New System.ComponentModel.BackgroundWorker
         Me.MenuStrip1.SuspendLayout()
         Me.SplitContainer1.Panel1.SuspendLayout()
         Me.SplitContainer1.Panel2.SuspendLayout()
@@ -77,7 +79,7 @@ Partial Class Main
         '退出XToolStripMenuItem1
         '
         Me.退出XToolStripMenuItem1.Name = "退出XToolStripMenuItem1"
-        Me.退出XToolStripMenuItem1.Size = New System.Drawing.Size(112, 22)
+        Me.退出XToolStripMenuItem1.Size = New System.Drawing.Size(111, 22)
         Me.退出XToolStripMenuItem1.Text = "退出(&X)"
         '
         '视图VToolStripMenuItem1
@@ -115,7 +117,7 @@ Partial Class Main
         '
         '帮助HToolStripMenuItem1
         '
-        Me.帮助HToolStripMenuItem1.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.使用帮助HToolStripMenuItem, Me.关于AToolStripMenuItem1})
+        Me.帮助HToolStripMenuItem1.DropDownItems.AddRange(New System.Windows.Forms.ToolStripItem() {Me.使用帮助HToolStripMenuItem, Me.检查更新UToolStripMenuItem, Me.关于AToolStripMenuItem1})
         Me.帮助HToolStripMenuItem1.Name = "帮助HToolStripMenuItem1"
         Me.帮助HToolStripMenuItem1.Size = New System.Drawing.Size(58, 20)
         Me.帮助HToolStripMenuItem1.Text = "帮助(&H)"
@@ -125,6 +127,12 @@ Partial Class Main
         Me.使用帮助HToolStripMenuItem.Name = "使用帮助HToolStripMenuItem"
         Me.使用帮助HToolStripMenuItem.Size = New System.Drawing.Size(149, 22)
         Me.使用帮助HToolStripMenuItem.Text = "使用帮助(&H)..."
+        '
+        '检查更新UToolStripMenuItem
+        '
+        Me.检查更新UToolStripMenuItem.Name = "检查更新UToolStripMenuItem"
+        Me.检查更新UToolStripMenuItem.Size = New System.Drawing.Size(149, 22)
+        Me.检查更新UToolStripMenuItem.Text = "检查更新(&U)"
         '
         '关于AToolStripMenuItem1
         '
@@ -281,6 +289,9 @@ Partial Class Main
         Me.ContextMenuStrip1.Name = "ContextMenuStrip1"
         Me.ContextMenuStrip1.Size = New System.Drawing.Size(61, 4)
         '
+        'BackgroundWorker1
+        '
+        '
         'Main
         '
         Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0!, 12.0!)
@@ -343,6 +354,8 @@ Partial Class Main
     Friend WithEvents 帮助HToolStripMenuItem1 As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents 使用帮助HToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
     Friend WithEvents 关于AToolStripMenuItem1 As System.Windows.Forms.ToolStripMenuItem
+    Friend WithEvents 检查更新UToolStripMenuItem As System.Windows.Forms.ToolStripMenuItem
+    Friend WithEvents BackgroundWorker1 As System.ComponentModel.BackgroundWorker
 
 
 End Class
