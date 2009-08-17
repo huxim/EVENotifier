@@ -1,25 +1,40 @@
+'EVENotifier,用于EVE的提醒工具.
+'版权所有(C) 2009 huxim
+'本程序为自由软件；您可依据自由软件基金会所发表的GNU通用公共授权条款，对本程序再次发布和/或修改；无论您依据的是本授权的第三版，或（您可选的）任一日后发行的版本。
+'本程序是基于使用目的而加以发布，然而不负任何担保责任；亦无对适售性或特定目的适用性所为的默示性担保。详情请参照GNU通用公共授权。
+'您应已收到附随于本程序的GNU通用公共授权的副本；如果没有，请参照
+'<http://www.gnu.org/licenses/>.
+'详情联系huxim123@gmail.com
+
 Imports System.Xml
+Imports System.Net
+Imports System.Text
+Imports System.IO
 Imports Google.GData.Calendar
 Imports Google.GData.Client
 Imports Google.GData.Extensions
 
 
 Public Class Main
-    Public timeColl As New Microsoft.VisualBasic.Collection()
-    Public DatetimeNow As DateTime
-    Public timeFileName As String = "time.xml"
-    Public index As Integer
-    Public lblName As String
-    Public lblDes As String
-    Public myOptions As New op
-
+    '===============定义变量==============
+    Public timeColl As New Microsoft.VisualBasic.Collection() '事件集合
+    Public DatetimeNow As DateTime '当前时间
+    Public timeFileName As String = "time.xml" '保存时间的文件
+    Public opFileName As String = "options.xml" '保存设置的文件
+    Public index As Integer '表示当前操作的事件在集合中的索引,目前只支持操作一个事件
+    Public lblName As String '弹窗提醒中显示的事件名称
+    Public lblDes As String '弹窗提醒中显示的事件状态(即将完成/已完成)
+    Public myOptions As New op '表示选项的对象
+    'Google日历用的
     Dim postUri As Uri = New Uri("http://www.google.com/calendar/feeds/default/private/full")
     Dim Service As CalendarService = New Google.GData.Calendar.CalendarService("EVENotifier")
+    '临时变量
     Dim i As Integer
     Dim j As Integer
-    Public intLen As Integer
+    Public intLen As Integer '加密用的....
+    Dim newVer As Boolean = False '是否有新版本
 
-    '通知区域静态的右键菜单
+    '声明通知区域静态的右键菜单
     Dim menuMain As ToolStripMenuItem = New ToolStripMenuItem
     Dim menuOption As ToolStripMenuItem = New ToolStripMenuItem
     Dim menuLoop As ToolStripMenuItem = New ToolStripMenuItem
@@ -27,9 +42,42 @@ Public Class Main
     Dim menuAdd As ToolStripMenuItem = New ToolStripMenuItem
     Dim sep1 As ToolStripSeparator = New ToolStripSeparator
     Dim sep2 As ToolStripSeparator = New ToolStripSeparator
+    '==================定义结束==============
 
-    '设置通知区域静态的右键菜单
+    '检查更新,注意用BackgroundWorker调用并跟踪
+    Sub checkUpdate()
+        Try
+            Dim req As HttpWebRequest = WebRequest.Create("http://sites.google.com/site/huximssoft/Home/eve-ti-xing-qi-net-1/xia-zai")
+            Dim res As HttpWebResponse = req.GetResponse()
+            Dim strm As StreamReader = New StreamReader(res.GetResponseStream(), Encoding.UTF8)
+            Dim sourceCode As String
+            Dim tmpArray() As String
+            Dim stringSeparators() As String = {"最新版本"}
+            sourceCode = strm.ReadToEnd()
+            tmpArray = sourceCode.Split(stringSeparators, StringSplitOptions.RemoveEmptyEntries)
+            sourceCode = tmpArray(1)
+            tmpArray = sourceCode.Split(")")
+            sourceCode = tmpArray(0)
+            'MsgBox(sourceCode)
+            Dim localVer As String() = {"0", "0", "0", "0"}
+            Dim remoteVer As String() = {"0", "0", "0", "0"}
+            newVer = False
+            localVer = My.Application.Info.Version.ToString.Split(".")
+            remoteVer = sourceCode.Split(".")
+            For a As Integer = 0 To 3 Step 1
+                If remoteVer(a) > localVer(a) Then
+                    newVer = True
+                    Exit For
+                End If
+            Next
+        Catch ex As Exception
+            MsgBox("检查更新出错,请检查网络连接." + Chr(13) & Chr(10) + "错误信息:" + ex.Message, MsgBoxStyle.Exclamation, "警告")
+        End Try
+    End Sub
+
+    '定义通知区域静态的右键菜单
     Sub setContextMenus()
+
         menuMain.Font = New Font(menuMain.Font, FontStyle.Bold)
         menuMain.Text = "显示主界面(&M)"
         AddHandler menuMain.Click, AddressOf showMain
@@ -46,9 +94,9 @@ Public Class Main
         menuAdd.Text = "添加提醒(&A)..."
         AddHandler menuAdd.Click, AddressOf cmdAdd_Click
 
-
     End Sub
 
+    '选项类
     Public Class op
         '气球提示
         Public opballoon As Boolean
@@ -87,18 +135,23 @@ Public Class Main
         Public timeFinish As DateTime
         '提醒时间
         Public timeNotify As DateTime
-        '判断已经提醒或已经完成
+        '已经提醒或已经完成
         Public isNotified As Boolean = False
         Public isFinished As Boolean = False
 
         Public Sub New()
         End Sub
-        
+
     End Class
 
+    '更新Google 日历,似乎有更好的方法.(多线程,注意冲突)
+    Sub updateGooCal()
+        delGEvents()
+        addGEvents()
+    End Sub
 
     '删除所有GCalendar事件
-    Sub delEvent()
+    Sub delGEvents()
         Try
             Dim myQuery As FeedQuery = New EventQuery()
             Service.setUserCredentials(myOptions.opUserName + "@gmail.com", myOptions.opPassword)
@@ -119,9 +172,8 @@ Public Class Main
     End Sub
 
     '将提醒添加到GCalendar
-    Sub addEvent()
+    Sub addGEvents()
         Try
-
             For Each mytime As time In timeColl
                 Dim entry As EventEntry = New EventEntry()
                 Service.setUserCredentials(myOptions.opUserName + "@gmail.com", myOptions.opPassword)
@@ -134,23 +186,23 @@ Public Class Main
                 entry.Times.Add(eventTime)
 
                 'Reminders and Notifications
-                Dim fifteenMinReminder As Reminder = New Reminder()
-                fifteenMinReminder.Minutes = myOptions.opGAd
-                fifteenMinReminder.Method = Reminder.ReminderMethod.sms
-                entry.Reminders.Add(fifteenMinReminder)
+                Dim timeReminder As Reminder = New Reminder()
+                timeReminder.Minutes = myOptions.opGAd
+                timeReminder.Method = Reminder.ReminderMethod.sms
+                entry.Reminders.Add(timeReminder)
                 'entry.Update()
 
                 'Send the request and receive the response:
                 Dim insertedEntry As AtomEntry = Service.Insert(postUri, entry)
-
             Next
         Catch ex As Exception
             MsgBox("添加事件出错!" & ex.Message, MsgBoxStyle.Exclamation, "警告")
         End Try
     End Sub
+
     '载入设置
     Sub loadoptions()
-        If My.Computer.FileSystem.FileExists("options.xml") = False Then
+        If My.Computer.FileSystem.FileExists(opFileName) = False Then
             MsgBox("未找到设置文件,将自动创建默认设置文件.", MsgBoxStyle.Information, "信息")
             defaultop()
         End If
@@ -159,10 +211,8 @@ Public Class Main
         readersettings.ConformanceLevel = ConformanceLevel.Fragment
         readersettings.IgnoreWhitespace = True
         readersettings.IgnoreComments = True
-        Dim reader As XmlReader = XmlReader.Create("options.xml", readersettings)
+        Dim reader As XmlReader = XmlReader.Create(opFileName, readersettings)
         Try
-
-
             '读取xml
             reader.ReadToFollowing("opballoon")
 
@@ -182,13 +232,14 @@ Public Class Main
         Catch ex As Exception
             reader.Close()
             MsgBox("载入设置出现错误,将自动创建默认设置文件." + Chr(13) & Chr(10) + "错误信息:" + ex.Message, MsgBoxStyle.Information, "信息")
-            If My.Computer.FileSystem.FileExists("options.xml") Then
-                My.Computer.FileSystem.DeleteFile("options.xml")
+            If My.Computer.FileSystem.FileExists(opFileName) Then
+                My.Computer.FileSystem.DeleteFile(opFileName)
             End If
             defaultop()
             loadoptions()
         End Try
     End Sub
+
     '载入时间
     Sub loadtime()
         If My.Computer.FileSystem.FileExists(timeFileName) = False Then
@@ -198,8 +249,8 @@ Public Class Main
 
         Dim reader As XmlTextReader = Nothing
         Try
-            ' Load the reader with the data file and 
-            'ignore all white space nodes. 
+            ' Load the reader with the data file and
+            'ignore all white space nodes.
             reader = New XmlTextReader(timeFileName)
             reader.WhitespaceHandling = WhitespaceHandling.None
 
@@ -217,7 +268,7 @@ Public Class Main
                         reader.ReadStartElement() '移动读取器到<notiName>
                         reader.Read() '移动读取器到名称
                         myTime.notiName = reader.Value
-                        reader.Read()  '移动读取器到</notiName>
+                        reader.Read() '移动读取器到</notiName>
                         reader.ReadEndElement() '移动读取器到<timeFinish>
                         reader.Read() '移动读取器到完成时间
                         myTime.timeFinish = reader.Value
@@ -246,9 +297,8 @@ Public Class Main
                 reader.Close()
             End If
         End Try
-
-
     End Sub
+
     '保存设置
     Sub saveoptions()
         'Try
@@ -256,8 +306,8 @@ Public Class Main
         '创建writer
         Dim writersettings As New XmlWriterSettings()
         writersettings.Indent = True
-        writersettings.IndentChars = "    "
-        Dim writer As XmlWriter = XmlWriter.Create("options.xml", writersettings)
+        writersettings.IndentChars = " "
+        Dim writer As XmlWriter = XmlWriter.Create(opFileName, writersettings)
         Try
             '写入xml
             writer.WriteStartElement("op")
@@ -279,13 +329,14 @@ Public Class Main
         Catch ex As Exception
             writer.Close()
             MsgBox("保存设置出现错误,将自动创建默认设置文件." + Chr(13) & Chr(10) + "错误信息:" + ex.Message, MsgBoxStyle.Exclamation, "警告")
-            If My.Computer.FileSystem.FileExists("options.xml") Then
-                My.Computer.FileSystem.DeleteFile("options.xml")
+            If My.Computer.FileSystem.FileExists(opFileName) Then
+                My.Computer.FileSystem.DeleteFile(opFileName)
             End If
             defaultop()
 
         End Try
     End Sub
+
     '保存时间
     Sub savetime()
 
@@ -293,7 +344,7 @@ Public Class Main
         '创建writer
         Dim writersettings As New XmlWriterSettings()
         writersettings.Indent = True
-        writersettings.IndentChars = "    "
+        writersettings.IndentChars = " "
         Dim writer As XmlWriter = XmlWriter.Create(timeFileName, writersettings)
         Try
             '写入xml
@@ -321,13 +372,14 @@ Public Class Main
             defaulttime()
         End Try
     End Sub
+
     '写默认设置
     Sub defaultop()
         '创建writer
         Dim writersettings As New XmlWriterSettings()
         writersettings.Indent = True
-        writersettings.IndentChars = "    "
-        Dim writer As XmlWriter = XmlWriter.Create("options.xml", writersettings)
+        writersettings.IndentChars = " "
+        Dim writer As XmlWriter = XmlWriter.Create(opFileName, writersettings)
         '写入xml
         writer.WriteStartElement("op")
         writer.WriteElementString("opballoon", "true")
@@ -346,12 +398,13 @@ Public Class Main
         writer.Flush()
         writer.Close()
     End Sub
+
     '写空时间文件
     Sub defaulttime()
         '创建writer
         Dim writersettings As New XmlWriterSettings()
         writersettings.Indent = True
-        writersettings.IndentChars = "    "
+        writersettings.IndentChars = " "
         Dim writer As XmlWriter = XmlWriter.Create(timeFileName, writersettings)
         '写入xml
         writer.WriteStartElement("time")
@@ -359,6 +412,7 @@ Public Class Main
         writer.Flush()
         writer.Close()
     End Sub
+
     '加密密码
     Function encrypt(ByVal cleartext As String) As String
         Dim charArraystr() As Char = cleartext.ToCharArray
@@ -369,32 +423,24 @@ Public Class Main
         Dim intArrayresult(intStrlen) As Integer
 
         intLen = intStrlen * 2 + 1
-        
 
         For i = 0 To intTimes - 1
             For j = 0 To intKeylen - 1
                 intArrayresult(j + i * intKeylen) = AscW(charArraystr(j + i * intKeylen)) Xor AscW(charArraykey(j))
-
-
-
             Next
         Next
 
         For i = intTimes * intKeylen To intStrlen - 1
             intArrayresult(i) = AscW(charArraystr(i)) Xor AscW(charArraykey(i - intTimes * intKeylen))
-
-
-
         Next
 
         Dim txtStrText As String = ""
         For i = 0 To intStrlen - 1
             txtStrText = txtStrText & intArrayresult(i) & ","
-
-
         Next
         Return txtStrText
     End Function
+
     '解密密码
     Function decrypt(ByVal ciphertext As String) As String
         Dim charArraystr() As Char = ciphertext.ToCharArray
@@ -406,22 +452,17 @@ Public Class Main
         Dim n As Integer
 
         intLen = intStrlen * 2 + 1
-        
 
         For i = 0 To intTimes - 1
             For j = 0 To intKeylen - 1
                 n = Val(strArrayresult(j + i * intKeylen))
                 strArrayresult(j + i * intKeylen) = ChrW(n Xor AscW(charArraykey(j)))
-
-                
             Next
         Next
 
         For i = intTimes * intKeylen To intStrlen - 1
             n = Val(strArrayresult(i))
             strArrayresult(i) = ChrW(n Xor AscW(charArraykey(i - intTimes * intKeylen)))
-
-            
         Next
 
         Dim txtStrText As String = ""
@@ -430,7 +471,6 @@ Public Class Main
         Next
         Return txtStrText
     End Function
-
 
     '将timeColl中的时间更新到ListView,并更新通知区域右键菜单
     Sub showTimes()
@@ -444,7 +484,6 @@ Public Class Main
         ContextMenuStrip1.Items.Add(menuLoop)
         ContextMenuStrip1.Items.Add(sep1)
         ContextMenuStrip1.Items.Add(menuAdd)
-
 
         For Each mytime As time In timeColl
             '列表
@@ -465,35 +504,34 @@ Public Class Main
             Dim menuDel As ToolStripMenuItem = New ToolStripMenuItem
             menuDel.Text = "删除"
             AddHandler menuDel.Click, AddressOf del_Click
-            '将菜单装入ContextMenuStrip1
+            '将子菜单装入menuEvent
             menuEvent.DropDownItems.Add(menuEdit)
             menuEvent.DropDownItems.Add(menuDel)
+            '将菜单装入ContextMenuStrip1
             ContextMenuStrip1.Items.Add(menuEvent)
-            'MsgBox(menuEdit.Parent.Text)
             i += 1
         Next
-        changeColor() '颜色
+        changeColor()
         cmdDel.Enabled = False
         cmdEdit.Enabled = False
-        '菜单
+        '静态菜单剩余部分
         ContextMenuStrip1.Items.Add(sep2)
         ContextMenuStrip1.Items.Add(menuExit)
 
     End Sub
+
     '更改颜色
     Sub changeColor()
         Dim i As Integer = 0
         For Each mytime As time In timeColl
-            '技能即将完成
+            '即将完成
             If DatetimeNow > mytime.timeNotify Then
-
 
                 '更改颜色
                 ListView1.Items(i).BackColor = Color.Yellow
             End If
             '完成
             If DatetimeNow > mytime.timeFinish Then
-
 
                 '更改颜色
                 ListView1.Items(i).BackColor = Color.Red
@@ -515,14 +553,6 @@ Public Class Main
         End If
     End Sub
 
-    'Private Sub 选项OToolStripMenuItem1_Click(ByVal sender As System.Object, ByVal e As System.EventArgs)
-    '    Options.ShowDialog()
-    'End Sub
-
-    'Private Sub 循环计时器LToolStripMenuItem1_Click(ByVal sender As System.Object, ByVal e As System.EventArgs)
-    '    frmloop.Show()
-    'End Sub
-
     Private Sub 在线帮助HToolStripMenuItem1_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles 使用帮助HToolStripMenuItem.Click
         System.Diagnostics.Process.Start("http://sites.google.com/site/huximssoft/Home/eve-ti-xing-qi-net-1/bang-zhu")
     End Sub
@@ -532,7 +562,7 @@ Public Class Main
     End Sub
 
     Private Sub Timer1_Tick(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles Timer1.Tick
-        '每一秒钟更新时间
+        '每一秒钟更新当前时间并显示
         DatetimeNow = DateTime.Now
         lblTimeNow.Text = DatetimeNow.ToString
         '检查是否到达提醒时间
@@ -570,11 +600,9 @@ Public Class Main
                     Dim Result As Integer
 
                     'Displays a MessageBox using the Question icon and specifying the No button as the default.
-
                     Result = MsgBox(lblName + Chr(13) & Chr(10) + lblDes, MessageBoxIcon.Warning, "请注意")
 
                     ' Gets the result of the MessageBox display.
-
                     If Result = 1 Then
                         My.Computer.Audio.Stop()
                     End If
@@ -614,11 +642,9 @@ Public Class Main
                     Dim Result As Integer
 
                     'Displays a MessageBox using the Question icon and specifying the No button as the default.
-
                     Result = MsgBox(lblName + Chr(13) & Chr(10) + lblDes, MessageBoxIcon.Information, "请注意")
 
                     ' Gets the result of the MessageBox display.
-
                     If Result = 1 Then
                         My.Computer.Audio.Stop()
                     End If
@@ -627,8 +653,6 @@ Public Class Main
                 '更改颜色
                 ListView1.Items(i).BackColor = Color.Yellow
             End If
-
-
             i += 1
         Next
     End Sub
@@ -646,51 +670,10 @@ Public Class Main
     End Sub
 
     Private Sub cmdDel_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles cmdDel.Click
-
-        ' Initializes variables to pass to the MessageBox.Show method.
-
-        Dim Message As String = "真的要删除'" + timeColl.Item(index + 1).notiName + "'么?"
-        Dim Caption As String = "确认"
-        Dim Buttons As Integer = MessageBoxButtons.YesNo
-        Dim Result As DialogResult
-
-        'Displays a MessageBox using the Question icon and specifying the No button as the default.
-
-        Result = MessageBox.Show(Me, Message, Caption, MessageBoxButtons.YesNo)
-
-        ' Gets the result of the MessageBox display.
-
-        If Result = Windows.Forms.DialogResult.Yes Then
-
-            ' 删除记录
-            timeColl.Remove(index + 1)
-            'MessageBox.Show("已删除!")
-            savetime()
-            showTimes()
-            ListView1.Focus()
-            If index > 0 Then
-                ListView1.Items(index - 1).Selected = True
-            ElseIf index = 0 Then
-                If ListView1.Items.Count > 0 Then
-                    ListView1.Items(index).Selected = True
-                End If
-            End If
-            If myOptions.opGCalendar Then
-                delEvent()
-                addEvent()
-            End If
-
-            If timeColl.Count = 0 Then
-                cmdDel.Enabled = False
-                cmdEdit.Enabled = False
-            End If
-        End If
-
+        delAEvent()
     End Sub
 
-
     Private Sub Main_Load(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles MyBase.Load
-        
         '启动时显示时间
         DatetimeNow = DateTime.Now
         lblTimeNow.Text = DatetimeNow.ToString
@@ -712,9 +695,6 @@ Public Class Main
     Private Sub ListView1_SelectedIndexChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles ListView1.SelectedIndexChanged
         Dim indexes As ListView.SelectedIndexCollection = Me.ListView1.SelectedIndices
         If indexes.Count > 0 Then
-            'For Each index In indexes
-
-            'Next
             index = indexes(0)
             cmdEdit.Enabled = True
             cmdDel.Enabled = True
@@ -737,6 +717,7 @@ Public Class Main
         Me.ShowInTaskbar = True
     End Sub
 
+    '最小化隐藏任务栏按钮
     Private Sub Main_Resize(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Resize
         If Me.WindowState = FormWindowState.Minimized Then
             Me.ShowInTaskbar = False
@@ -766,7 +747,7 @@ Public Class Main
         Dim timeTip As New System.Text.StringBuilder()
         For Each mytime As time In timeColl
             'timeTip += mytime.notiName + " - " + mytime.timeFinish + vbCrLf 'Chr(13) & Chr(10)
-            timeTip = timeTip.Append(vbCrLf + mytime.notiName + " - " + mytime.timeFinish)   'Chr(13) & Chr(10)
+            timeTip = timeTip.Append(vbCrLf + mytime.notiName + " - " + mytime.timeFinish) 'Chr(13) & Chr(10)
         Next
         Dim txttip As String
         If timeTip.Length > 0 Then
@@ -779,8 +760,6 @@ Public Class Main
         Else
             NotifyIcon1.Text = txttip
         End If
-        'NotifyIcon1.Text = txttip.Length
-
     End Sub
 
     Private Sub showLoop(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles 循环计时器LToolStripMenuItem1.Click
@@ -794,7 +773,49 @@ Public Class Main
     Private Sub edit_Click(ByVal sender As System.Object, ByVal e As System.EventArgs)
         Edit.ShowDialog()
     End Sub
+
     Private Sub del_Click(ByVal sender As System.Object, ByVal e As System.EventArgs)
+        delAEvent()
+    End Sub
+
+    Private Sub event_MouseMove(ByVal sender As Object, ByVal e As System.Windows.Forms.MouseEventArgs)
+        Dim mItem As ToolStripMenuItem
+
+        mItem = CType(sender, ToolStripMenuItem)
+        index = mItem.Name
+        'MsgBox(index)
+    End Sub
+
+    Private Sub 检查更新UToolStripMenuItem_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles 检查更新UToolStripMenuItem.Click
+        BackgroundWorker1.RunWorkerAsync()
+    End Sub
+
+    Private Sub BackgroundWorker1_DoWork(ByVal sender As System.Object, ByVal e As System.ComponentModel.DoWorkEventArgs) Handles BackgroundWorker1.DoWork
+        checkUpdate()
+    End Sub
+
+    Private Sub BackgroundWorker1_RunWorkerCompleted(ByVal sender As Object, ByVal e As System.ComponentModel.RunWorkerCompletedEventArgs) Handles BackgroundWorker1.RunWorkerCompleted
+        ' Initializes variables to pass to the MessageBox.Show method.
+        Dim MessageHasNew As String = "现在有新版本,要转到下载页吗?"
+        Dim MessageNoNew As String = "没有发现新版本."
+        Dim Caption As String = "检查更新"
+        Dim ButtonsHasNew As Integer = MessageBoxButtons.YesNo
+        Dim ButtonsNoNew As Integer = MessageBoxButtons.OK
+        Dim Result As DialogResult
+        If newVer Then
+            'Displays a MessageBox using the Question icon and specifying the No button as the default.
+            Result = MessageBox.Show(Me, MessageHasNew, Caption, ButtonsHasNew)
+
+            ' Gets the result of the MessageBox display.
+            If Result = Windows.Forms.DialogResult.Yes Then
+                System.Diagnostics.Process.Start("http://sites.google.com/site/huximssoft/Home/eve-ti-xing-qi-net-1/xia-zai")
+            End If
+        Else
+            MessageBox.Show(Me, MessageNoNew, Caption, ButtonsNoNew)
+        End If
+    End Sub
+
+    Private Sub delAEvent()
         ' Initializes variables to pass to the MessageBox.Show method.
 
         Dim Message As String = "真的要删除'" + timeColl.Item(index + 1).notiName + "'么?"
@@ -803,11 +824,9 @@ Public Class Main
         Dim Result As DialogResult
 
         'Displays a MessageBox using the Question icon and specifying the No button as the default.
-
         Result = MessageBox.Show(Me, Message, Caption, MessageBoxButtons.YesNo)
 
         ' Gets the result of the MessageBox display.
-
         If Result = Windows.Forms.DialogResult.Yes Then
 
             ' 删除记录
@@ -824,8 +843,8 @@ Public Class Main
                 End If
             End If
             If myOptions.opGCalendar Then
-                delEvent()
-                addEvent()
+                Dim threadUpdateGoocal As New System.Threading.Thread(AddressOf updateGooCal)
+                threadUpdateGoocal.Start()
             End If
 
             If timeColl.Count = 0 Then
@@ -833,13 +852,5 @@ Public Class Main
                 cmdEdit.Enabled = False
             End If
         End If
-
-    End Sub
-    Private Sub event_MouseMove(ByVal sender As Object, ByVal e As System.Windows.Forms.MouseEventArgs)
-        Dim mItem As ToolStripMenuItem
-
-        mItem = CType(sender, ToolStripMenuItem)
-        index = mItem.Name
-        'MsgBox(index)
     End Sub
 End Class

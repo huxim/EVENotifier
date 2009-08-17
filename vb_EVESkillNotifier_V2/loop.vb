@@ -1,4 +1,12 @@
-﻿Imports System.Windows.Forms
+﻿'EVENotifier,用于EVE的提醒工具.
+'版权所有(C) 2009 huxim
+'本程序为自由软件；您可依据自由软件基金会所发表的GNU通用公共授权条款，对本程序再次发布和/或修改；无论您依据的是本授权的第三版，或（您可选的）任一日后发行的版本。
+'本程序是基于使用目的而加以发布，然而不负任何担保责任；亦无对适售性或特定目的适用性所为的默示性担保。详情请参照GNU通用公共授权。
+'您应已收到附随于本程序的GNU通用公共授权的副本；如果没有，请参照
+'<http://www.gnu.org/licenses/>.
+'详情联系huxim123@gmail.com
+
+Imports System.Windows.Forms
 
 Public Class frmloop
     Dim T As Integer
@@ -40,10 +48,8 @@ Public Class frmloop
             T = T - 1
             lbltime.Text = T
             If T = 0 Then
-                'main.NotifyIcon1.BalloonTipText = "循环时间到!"
-                'main.NotifyIcon1.ShowBalloonTip(1000)
                 i = i + 1
-                main.NotifyIcon1.ShowBalloonTip(1000, "注意!", "设定的时间循环了" & i & "次.", ToolTipIcon.Info)
+                Main.NotifyIcon1.ShowBalloonTip(1000, "循环计时器", "你设定的时间循环了" & i & "次.", ToolTipIcon.Info)
                 Try
 
                     My.Computer.Audio.Play(My.Resources.dingdang, AudioPlayMode.Background)

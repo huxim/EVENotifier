@@ -1,14 +1,14 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <op>
-    <opballoon>true</opballoon>
-    <opmsgbox>true</opmsgbox>
-    <opsound>true</opsound>
-    <oppath />
-    <opdefault>true</opdefault>
-    <opcustom>false</opcustom>
-    <opadvance>5</opadvance>
-    <opGCalendar>false</opGCalendar>
-    <opUserName />
-    <opPassword />
-    <opadvance>15</opadvance>
+ <opballoon>true</opballoon>
+ <opmsgbox>true</opmsgbox>
+ <opsound>true</opsound>
+ <oppath />
+ <opdefault>true</opdefault>
+ <opcustom>false</opcustom>
+ <opadvance>5</opadvance>
+ <opGCalendar>false</opGCalendar>
+ <opUserName />
+ <opPassword />
+ <opadvance>15</opadvance>
 </op>
