@@ -10,5 +10,7 @@
  <opGCalendar>false</opGCalendar>
  <opUserName />
  <opPassword />
- <opadvance>15</opadvance>
+ <opGAd>15</opGAd>
+ <opAutorun>false</opAutorun>
+ <opMinimize>false</opMinimize>
 </op>

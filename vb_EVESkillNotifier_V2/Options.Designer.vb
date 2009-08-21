@@ -49,13 +49,17 @@ Partial Class Options
         Me.cmdApply = New System.Windows.Forms.Button
         Me.OpenFileDialog1 = New System.Windows.Forms.OpenFileDialog
         Me.TabControl1 = New System.Windows.Forms.TabControl
+        Me.TabPage3 = New System.Windows.Forms.TabPage
+        Me.chkMinimize = New System.Windows.Forms.CheckBox
+        Me.chkAutorun = New System.Windows.Forms.CheckBox
         Me.TabPage1 = New System.Windows.Forms.TabPage
         Me.TabPage2 = New System.Windows.Forms.TabPage
-        Me.Label7 = New System.Windows.Forms.Label
-        Me.txtGAd = New System.Windows.Forms.NumericUpDown
         Me.Label8 = New System.Windows.Forms.Label
+        Me.txtGAd = New System.Windows.Forms.NumericUpDown
+        Me.Label7 = New System.Windows.Forms.Label
         Me.TableLayoutPanel1.SuspendLayout()
         Me.TabControl1.SuspendLayout()
+        Me.TabPage3.SuspendLayout()
         Me.TabPage1.SuspendLayout()
         Me.TabPage2.SuspendLayout()
         CType(Me.txtGAd, System.ComponentModel.ISupportInitialize).BeginInit()
@@ -297,6 +301,7 @@ Partial Class Options
         '
         'TabControl1
         '
+        Me.TabControl1.Controls.Add(Me.TabPage3)
         Me.TabControl1.Controls.Add(Me.TabPage1)
         Me.TabControl1.Controls.Add(Me.TabPage2)
         Me.TabControl1.Location = New System.Drawing.Point(12, 12)
@@ -304,6 +309,38 @@ Partial Class Options
         Me.TabControl1.SelectedIndex = 0
         Me.TabControl1.Size = New System.Drawing.Size(390, 222)
         Me.TabControl1.TabIndex = 2
+        '
+        'TabPage3
+        '
+        Me.TabPage3.Controls.Add(Me.chkMinimize)
+        Me.TabPage3.Controls.Add(Me.chkAutorun)
+        Me.TabPage3.Location = New System.Drawing.Point(4, 21)
+        Me.TabPage3.Name = "TabPage3"
+        Me.TabPage3.Padding = New System.Windows.Forms.Padding(3)
+        Me.TabPage3.Size = New System.Drawing.Size(382, 197)
+        Me.TabPage3.TabIndex = 2
+        Me.TabPage3.Text = "常规"
+        Me.TabPage3.UseVisualStyleBackColor = True
+        '
+        'chkMinimize
+        '
+        Me.chkMinimize.AutoSize = True
+        Me.chkMinimize.Location = New System.Drawing.Point(24, 92)
+        Me.chkMinimize.Name = "chkMinimize"
+        Me.chkMinimize.Size = New System.Drawing.Size(114, 16)
+        Me.chkMinimize.TabIndex = 1
+        Me.chkMinimize.Text = "启动后最小化(&M)"
+        Me.chkMinimize.UseVisualStyleBackColor = True
+        '
+        'chkAutorun
+        '
+        Me.chkAutorun.AutoSize = True
+        Me.chkAutorun.Location = New System.Drawing.Point(24, 42)
+        Me.chkAutorun.Name = "chkAutorun"
+        Me.chkAutorun.Size = New System.Drawing.Size(110, 16)
+        Me.chkAutorun.TabIndex = 0
+        Me.chkAutorun.Text = "伴随系统启动(&S)"
+        Me.chkAutorun.UseVisualStyleBackColor = True
         '
         'TabPage1
         '
@@ -348,22 +385,6 @@ Partial Class Options
         Me.TabPage2.Text = "扩展"
         Me.TabPage2.UseVisualStyleBackColor = True
         '
-        'Label7
-        '
-        Me.Label7.AutoSize = True
-        Me.Label7.Location = New System.Drawing.Point(16, 125)
-        Me.Label7.Name = "Label7"
-        Me.Label7.Size = New System.Drawing.Size(154, 12)
-        Me.Label7.TabIndex = 23
-        Me.Label7.Text = "设置Google日历提醒器时间:"
-        '
-        'txtGAd
-        '
-        Me.txtGAd.Location = New System.Drawing.Point(190, 123)
-        Me.txtGAd.Name = "txtGAd"
-        Me.txtGAd.Size = New System.Drawing.Size(44, 20)
-        Me.txtGAd.TabIndex = 24
-        '
         'Label8
         '
         Me.Label8.AutoSize = True
@@ -372,6 +393,22 @@ Partial Class Options
         Me.Label8.Size = New System.Drawing.Size(29, 12)
         Me.Label8.TabIndex = 25
         Me.Label8.Text = "分钟"
+        '
+        'txtGAd
+        '
+        Me.txtGAd.Location = New System.Drawing.Point(190, 123)
+        Me.txtGAd.Name = "txtGAd"
+        Me.txtGAd.Size = New System.Drawing.Size(44, 20)
+        Me.txtGAd.TabIndex = 24
+        '
+        'Label7
+        '
+        Me.Label7.AutoSize = True
+        Me.Label7.Location = New System.Drawing.Point(16, 125)
+        Me.Label7.Name = "Label7"
+        Me.Label7.Size = New System.Drawing.Size(154, 12)
+        Me.Label7.TabIndex = 23
+        Me.Label7.Text = "设置Google日历提醒器时间:"
         '
         'Options
         '
@@ -393,6 +430,8 @@ Partial Class Options
         Me.TopMost = True
         Me.TableLayoutPanel1.ResumeLayout(False)
         Me.TabControl1.ResumeLayout(False)
+        Me.TabPage3.ResumeLayout(False)
+        Me.TabPage3.PerformLayout()
         Me.TabPage1.ResumeLayout(False)
         Me.TabPage1.PerformLayout()
         Me.TabPage2.ResumeLayout(False)
@@ -432,4 +471,7 @@ Partial Class Options
     Friend WithEvents Label7 As System.Windows.Forms.Label
     Friend WithEvents Label8 As System.Windows.Forms.Label
     Friend WithEvents txtGAd As System.Windows.Forms.NumericUpDown
+    Friend WithEvents TabPage3 As System.Windows.Forms.TabPage
+    Friend WithEvents chkMinimize As System.Windows.Forms.CheckBox
+    Friend WithEvents chkAutorun As System.Windows.Forms.CheckBox
 End Class
