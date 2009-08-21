@@ -30,6 +30,8 @@ Public Class Options
         txtUserName.Text = Main.myOptions.opUserName
         txtPassword.Text = Main.myOptions.opPassword
         txtGAd.Value = Main.myOptions.opGAd
+        chkAutorun.Checked = Main.myOptions.opAutorun
+        chkMinimize.Checked = Main.myOptions.opMinimize
 
         cmdApply.Enabled = False
 
@@ -151,32 +153,32 @@ Public Class Options
             MsgBox("请指定音频文件!", MsgBoxStyle.Exclamation, "警告")
         Else
             Try
-                main.myOptions.opballoon = chkballoon.Checked
-                main.myOptions.opmsgbox = chkmsgbox.Checked
-                main.myOptions.opsound = chksound.Checked
-                main.myOptions.opdefault = rdoDefault.Checked
-                main.myOptions.opcustom = rdoCustom.Checked
-                main.myOptions.oppath = txtPath.Text
-                Main.myOptions.opadvance = txtadvance.Text
-                Main.myOptions.opGCalendar = chkGCal.Checked
-                'Main.myOptions.opXML = txtXML.Text
-                Main.myOptions.opUserName = txtUserName.Text
-                Main.myOptions.opPassword = txtPassword.Text
-                Main.myOptions.opGAd = txtGAd.Text
-                'main.myTime.timeNotify = main.myTime.timeFinish.Add(New System.TimeSpan(0, 0, -main.myOptions.opadvance, 0))
+                'main.myOptions.opballoon = chkballoon.Checked
+                'main.myOptions.opmsgbox = chkmsgbox.Checked
+                'main.myOptions.opsound = chksound.Checked
+                'main.myOptions.opdefault = rdoDefault.Checked
+                'main.myOptions.opcustom = rdoCustom.Checked
+                'main.myOptions.oppath = txtPath.Text
+                'Main.myOptions.opadvance = txtadvance.Text
+                'Main.myOptions.opGCalendar = chkGCal.Checked
+                ''Main.myOptions.opXML = txtXML.Text
+                'Main.myOptions.opUserName = txtUserName.Text
+                'Main.myOptions.opPassword = txtPassword.Text
+                'Main.myOptions.opGAd = txtGAd.Text
+                ''main.myTime.timeNotify = main.myTime.timeFinish.Add(New System.TimeSpan(0, 0, -main.myOptions.opadvance, 0))
 
-                For Each mytime As Main.time In Main.timeColl
-                    mytime.timeNotify = mytime.timeFinish.Add(New System.TimeSpan(0, 0, -Main.myOptions.opadvance, 0))
-                Next
+                'For Each mytime As Main.time In Main.timeColl
+                '    mytime.timeNotify = mytime.timeFinish.Add(New System.TimeSpan(0, 0, -Main.myOptions.opadvance, 0))
+                'Next
 
-                Main.showTimes()
-                Main.saveoptions()
-                Main.savetime()
-                If Main.myOptions.opGCalendar Then
-                    Dim threadUpdateGoocal As New System.Threading.Thread(AddressOf Main.updateGooCal)
-                    threadUpdateGoocal.Start()
-                End If
-
+                'Main.showTimes()
+                'Main.saveoptions()
+                'Main.savetime()
+                'If Main.myOptions.opGCalendar Then
+                '    Dim threadUpdateGoocal As New System.Threading.Thread(AddressOf Main.updateGooCal)
+                '    threadUpdateGoocal.Start()
+                'End If
+                applyOptions()
                 cmdApply.Enabled = False
             Catch ex As Exception
                 MsgBox("出现错误!" & ex.Message, MsgBoxStyle.Exclamation, "警告")
@@ -191,33 +193,32 @@ Public Class Options
             MsgBox("请指定音频文件!", MsgBoxStyle.Exclamation, "警告")
         Else
             Try
-                main.myOptions.opballoon = chkballoon.Checked
-                main.myOptions.opmsgbox = chkmsgbox.Checked
-                main.myOptions.opsound = chksound.Checked
-                main.myOptions.opdefault = rdoDefault.Checked
-                main.myOptions.opcustom = rdoCustom.Checked
-                main.myOptions.oppath = txtPath.Text
-                Main.myOptions.opadvance = txtadvance.Text
-                Main.myOptions.opGCalendar = chkGCal.Checked
-                'Main.myOptions.opXML = txtXML.Text
-                Main.myOptions.opUserName = txtUserName.Text
-                Main.myOptions.opPassword = txtPassword.Text
-                Main.myOptions.opGAd = txtGAd.Text
-                'main.myTime.timeNotify = main.myTime.timeFinish.Add(New System.TimeSpan(0, 0, -main.myOptions.opadvance, 0))
+                'main.myOptions.opballoon = chkballoon.Checked
+                'main.myOptions.opmsgbox = chkmsgbox.Checked
+                'main.myOptions.opsound = chksound.Checked
+                'main.myOptions.opdefault = rdoDefault.Checked
+                'main.myOptions.opcustom = rdoCustom.Checked
+                'main.myOptions.oppath = txtPath.Text
+                'Main.myOptions.opadvance = txtadvance.Text
+                'Main.myOptions.opGCalendar = chkGCal.Checked
+                ''Main.myOptions.opXML = txtXML.Text
+                'Main.myOptions.opUserName = txtUserName.Text
+                'Main.myOptions.opPassword = txtPassword.Text
+                'Main.myOptions.opGAd = txtGAd.Text
+                ''main.myTime.timeNotify = main.myTime.timeFinish.Add(New System.TimeSpan(0, 0, -main.myOptions.opadvance, 0))
 
-                For Each mytime As Main.time In Main.timeColl
-                    mytime.timeNotify = mytime.timeFinish.Add(New System.TimeSpan(0, 0, -Main.myOptions.opadvance, 0))
-                Next
+                'For Each mytime As Main.time In Main.timeColl
+                '    mytime.timeNotify = mytime.timeFinish.Add(New System.TimeSpan(0, 0, -Main.myOptions.opadvance, 0))
+                'Next
 
-                Main.showTimes()
-                Main.saveoptions()
-                Main.savetime()
-                If Main.myOptions.opGCalendar Then
-                    
-                    Dim threadUpdateGoocal As New System.Threading.Thread(AddressOf Main.updateGooCal)
-                    threadUpdateGoocal.Start()
-                End If
-
+                'Main.showTimes()
+                'Main.saveoptions()
+                'Main.savetime()
+                'If Main.myOptions.opGCalendar Then
+                '    Dim threadUpdateGoocal As New System.Threading.Thread(AddressOf Main.updateGooCal)
+                '    threadUpdateGoocal.Start()
+                'End If
+                applyOptions()
                 Me.Close()
             Catch ex As Exception
                 MsgBox("出现错误!" & ex.Message, MsgBoxStyle.Exclamation, "警告")
@@ -255,7 +256,47 @@ Public Class Options
     '    cmdApply.Enabled = True
     'End Sub
 
-    Private Sub NumericUpDown1_ValueChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles txtGAd.ValueChanged
+    Private Sub applyOptions()
+        Main.myOptions.opballoon = chkballoon.Checked
+        Main.myOptions.opmsgbox = chkmsgbox.Checked
+        Main.myOptions.opsound = chksound.Checked
+        Main.myOptions.opdefault = rdoDefault.Checked
+        Main.myOptions.opcustom = rdoCustom.Checked
+        Main.myOptions.oppath = txtPath.Text
+        Main.myOptions.opadvance = txtadvance.Text
+        Main.myOptions.opGCalendar = chkGCal.Checked
+        'Main.myOptions.opXML = txtXML.Text
+        Main.myOptions.opUserName = txtUserName.Text
+        Main.myOptions.opPassword = txtPassword.Text
+        Main.myOptions.opGAd = txtGAd.Text
+        'main.myTime.timeNotify = main.myTime.timeFinish.Add(New System.TimeSpan(0, 0, -main.myOptions.opadvance, 0))
+        Main.myOptions.opAutorun = chkAutorun.Checked
+        Main.myOptions.opMinimize = chkMinimize.Checked
 
+
+        For Each mytime As Main.time In Main.timeColl
+            mytime.timeNotify = mytime.timeFinish.Add(New System.TimeSpan(0, 0, -Main.myOptions.opadvance, 0))
+        Next
+
+        Main.showTimes()
+        Main.saveoptions()
+        Main.savetime()
+        Main.applyAutorun()
+        If Main.myOptions.opGCalendar Then
+            Dim threadUpdateGoocal As New System.Threading.Thread(AddressOf Main.updateGooCal)
+            threadUpdateGoocal.Start()
+        End If
+    End Sub
+
+    Private Sub txtGAd_ValueChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles txtGAd.ValueChanged
+        cmdApply.Enabled = True
+    End Sub
+
+    Private Sub chkAutorun_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkAutorun.CheckedChanged
+        cmdApply.Enabled = True
+    End Sub
+
+    Private Sub chkMinimize_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles chkMinimize.CheckedChanged
+        cmdApply.Enabled = True
     End Sub
 End Class

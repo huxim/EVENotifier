@@ -10,6 +10,7 @@ Imports System.Xml
 Imports System.Net
 Imports System.Text
 Imports System.IO
+Imports Microsoft.Win32
 Imports Google.GData.Calendar
 Imports Google.GData.Client
 Imports Google.GData.Extensions
@@ -19,8 +20,9 @@ Public Class Main
     '===============定义变量==============
     Public timeColl As New Microsoft.VisualBasic.Collection() '事件集合
     Public DatetimeNow As DateTime '当前时间
-    Public timeFileName As String = "time.xml" '保存时间的文件
-    Public opFileName As String = "options.xml" '保存设置的文件
+    'Public xmlPath As String = My.Application.Info.DirectoryPath
+    Public timeFileName As String = My.Application.Info.DirectoryPath + "\time.xml" '保存时间的文件
+    Public opFileName As String = My.Application.Info.DirectoryPath + "\options.xml" '保存设置的文件
     Public index As Integer '表示当前操作的事件在集合中的索引,目前只支持操作一个事件
     Public lblName As String '弹窗提醒中显示的事件名称
     Public lblDes As String '弹窗提醒中显示的事件状态(即将完成/已完成)
@@ -122,6 +124,10 @@ Public Class Main
         Public opPassword As String
         'G提前时间
         Public opGAd As Integer
+        '自启动
+        Public opAutorun As Boolean
+        '启动后最小化
+        Public opMinimize As Boolean
 
         Public Sub New()
         End Sub
@@ -228,6 +234,8 @@ Public Class Main
             myOptions.opUserName = reader.ReadElementContentAsString()
             myOptions.opPassword = decrypt(reader.ReadElementContentAsString())
             myOptions.opGAd = reader.ReadElementContentAsInt()
+            myOptions.opAutorun = reader.ReadElementContentAsBoolean()
+            myOptions.opMinimize = reader.ReadElementContentAsBoolean()
             reader.Close()
         Catch ex As Exception
             reader.Close()
@@ -323,6 +331,8 @@ Public Class Main
             writer.WriteElementString("opUserName", myOptions.opUserName)
             writer.WriteElementString("opPassword", encrypt(myOptions.opPassword))
             writer.WriteElementString("opGAd", myOptions.opGAd)
+            writer.WriteElementString("opAutorun", CStr(myOptions.opAutorun).ToLower)
+            writer.WriteElementString("opMinimize", CStr(myOptions.opMinimize).ToLower)
             writer.WriteEndElement()
             writer.Flush()
             writer.Close()
@@ -394,6 +404,8 @@ Public Class Main
         writer.WriteElementString("opUserName", "")
         writer.WriteElementString("opPassword", "")
         writer.WriteElementString("opadvance", "15")
+        writer.WriteElementString("opAutorun", "false")
+        writer.WriteElementString("opMinimize", "false")
         writer.WriteEndElement()
         writer.Flush()
         writer.Close()
@@ -686,6 +698,91 @@ Public Class Main
         showTimes()
         '通知区域静态的右键菜单
         setContextMenus()
+        '应用常规设置
+        applyNormalOptions()
+    End Sub
+
+    '应用常规设置
+    Private Sub applyNormalOptions()
+        applyAutorun()
+        applyMinimize()
+    End Sub
+
+    '自启动
+    Sub applyAutorun()
+        '判断是无虚拟机还是有虚拟机
+        Dim appPath As String
+        Dim appLocation As String
+        Dim registryKey As String = "HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Run"
+        Dim isVM As Boolean
+        appPath = My.Application.Info.DirectoryPath
+        If appPath.EndsWith("\app") Then
+            'MsgBox(".")
+            isVM = True
+            Dim appString() As Char = "\app"
+            appLocation = appPath.TrimEnd(appString)
+            appPath = appLocation + "\evenloader.exe"
+        Else
+            appLocation = appPath
+            appPath = appLocation + "\run.exe"
+        End If
+        'MsgBox(appPath)
+
+        Try
+            If myOptions.opAutorun = True Then
+
+                Dim shortCutPath As String
+                ' 直接调用COM对象
+                Dim wsh As Object = CreateObject("WScript.Shell")
+                shortCutPath = appLocation & "\EVENotifier.lnk"
+                'shortCutPath = wsh.SpecialFolders("StartUp") & "\EVENotifier.lnk"
+                'MsgBox(shortCutPath)
+
+                Dim lnk As Object = wsh.CreateShortcut(shortCutPath)
+                If isVM Then
+                    With lnk
+                        '.Arguments = "/?" '传递参数
+                        .Description = "EVE提醒器"
+                        .IconLocation = appLocation + "\app\run.exe,0" '图标
+                        .TargetPath = appPath
+                        '.WindowStyle = 7 '打开窗体的风格，最小化
+                        .WorkingDirectory = appLocation '工作路径
+
+                        .Save() '保存快捷方式
+                    End With
+
+                    My.Computer.Registry.SetValue(registryKey, "EVENotifier", shortCutPath, Microsoft.Win32.RegistryValueKind.String)
+                    'MsgBox("c:\windows\system32\cmd.exe /c """ + appPath + "")
+                Else
+                    With lnk
+                        '.Arguments = "/?" '传递参数
+                        .Description = "EVE提醒器"
+                        .IconLocation = appLocation + "\run.exe,0" '图标
+                        .TargetPath = appPath
+                        '.WindowStyle = 7 '打开窗体的风格，最小化
+                        .WorkingDirectory = appLocation '工作路径
+
+                        .Save() '保存快捷方式
+                    End With
+                    My.Computer.Registry.SetValue(registryKey, "EVENotifier", shortCutPath, Microsoft.Win32.RegistryValueKind.String)
+                End If
+            Else
+                Dim rk As RegistryKey = Registry.CurrentUser
+                rk = rk.OpenSubKey("Software\Microsoft\Windows\CurrentVersion\Run", True)
+                If rk.GetValue("EVENotifier") <> Nothing Then
+                    rk.DeleteValue("EVENotifier")
+                End If
+            End If
+        Catch ex As Exception
+            MsgBox("访问注册表出错." + Chr(13) & Chr(10) + "错误信息:" + ex.Message, MsgBoxStyle.Exclamation, "警告")
+        End Try
+    End Sub
+
+    '启动后最小化
+    Private Sub applyMinimize()
+        If myOptions.opMinimize = True Then
+            Me.WindowState = FormWindowState.Minimized
+        End If
     End Sub
 
     Private Sub ListView1_DoubleClick(ByVal sender As Object, ByVal e As System.EventArgs) Handles ListView1.DoubleClick

@@ -1,2 +1,13 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<time />
+<time>
+ <notiSetting>
+  <notiName>debug1</notiName>
+  <timeFinish>2009-9-19 16:56:10</timeFinish>
+  <timeNotify>2009-9-19 16:51:10</timeNotify>
+ </notiSetting>
+ <notiSetting>
+  <notiName>debug2</notiName>
+  <timeFinish>2009-10-19 17:30:52</timeFinish>
+  <timeNotify>2009-10-19 17:25:52</timeNotify>
+ </notiSetting>
+</time>

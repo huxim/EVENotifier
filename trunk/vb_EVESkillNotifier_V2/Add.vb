@@ -12,24 +12,21 @@ Public Class Add
 
     Private Sub OK_Button_Click(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles OK_Button.Click
         Try
-            If nbrDay.Value < 0 Or nbrDay.Value > 65534 Or nbrHour.Value < 0 _
-                Or nbrHour.Value > 24 Or nbrMin.Value < 0 Or nbrMin.Value > 60 _
-                Or nbrSec.Value < 0 Or nbrSec.Value > 60 Then
-                MsgBox("请正确输入时间!", MsgBoxStyle.Exclamation, "警告")
-                nbrDay.Value = 0
-                nbrHour.Value = 0
-                nbrMin.Value = 0
-                nbrSec.Value = 0
-            ElseIf txtNotiName.Text = "" Then
+            If txtNotiName.Text = "" Then
                 MsgBox("请输入提醒名称!", MsgBoxStyle.Exclamation, "警告")
             Else
-                Dim newTime As New Main.time
-                Dim duration As System.TimeSpan
 
+                Dim newTime As New Main.time
                 newTime.notiName = txtNotiName.Text
-                duration = New System.TimeSpan(nbrDay.Value, nbrHour.Value, nbrMin.Value, nbrSec.Value)
-                newTime.timeFinish = Main.DatetimeNow.Add(duration)
+                If rdbLefttime.Checked = True Then
+                    Dim duration As System.TimeSpan
+                    duration = New System.TimeSpan(nbrDay.Value, nbrHour.Value, nbrMin.Value, nbrSec.Value)
+                    newTime.timeFinish = Main.DatetimeNow.Add(duration)
+                Else
+                    newTime.timeFinish = dtpTime.Value
+                End If
                 newTime.timeNotify = newTime.timeFinish.Add(New System.TimeSpan(0, 0, -Main.myOptions.opadvance, 0))
+
                 Main.timeColl.Add(newTime)
                 Main.savetime()
                 Main.showTimes()
@@ -67,6 +64,7 @@ Public Class Add
         nbrHour.Value = 0
         nbrMin.Value = 0
         nbrSec.Value = 0
+
     End Sub
 
     Private Sub nbrDay_Click(ByVal sender As Object, ByVal e As System.EventArgs) Handles nbrDay.Click
@@ -134,5 +132,36 @@ Public Class Add
         Catch ex As Exception
             MsgBox("访问剪贴板发生错误!" + Chr(13) & Chr(10) + "错误信息:" + ex.Message, MsgBoxStyle.Exclamation, "警告")
         End Try
+    End Sub
+
+    Private Sub Add_Shown(ByVal sender As Object, ByVal e As System.EventArgs) Handles Me.Shown
+        txtNotiName.Focus()
+        dtpTime.Value = Main.DatetimeNow
+    End Sub
+
+    Private Sub rdbLefttime_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rdbLefttime.CheckedChanged
+        rdbChange()
+    End Sub
+
+    Private Sub rdbTime_CheckedChanged(ByVal sender As System.Object, ByVal e As System.EventArgs) Handles rdbTime.CheckedChanged
+        rdbChange()
+    End Sub
+
+    Private Sub rdbChange()
+        If rdbLefttime.Checked = True Then
+            nbrDay.Enabled = True
+            nbrHour.Enabled = True
+            nbrMin.Enabled = True
+            nbrSec.Enabled = True
+            Button1.Enabled = True
+            dtpTime.Enabled = False
+        Else
+            nbrDay.Enabled = False
+            nbrHour.Enabled = False
+            nbrMin.Enabled = False
+            nbrSec.Enabled = False
+            Button1.Enabled = False
+            dtpTime.Enabled = True
+        End If
     End Sub
 End Class
